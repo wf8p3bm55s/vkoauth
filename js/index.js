@@ -144,7 +144,7 @@ class App {
                         "fields": "nickname"
                     })
                 };
-            `
+            `;
 
             this.vkApiProvider.requestApi("execute", {
                 code: executeCode
@@ -155,7 +155,7 @@ class App {
                 console.log(xhr);
             });
         } else {
-            const authorizeBtnCLickCallback = () => {
+            const authorizeBtnCLickCallback = () => 
                 VkOAuth2Provider.authorize(
                     this.config.appId, 
                     this.config.appUrl, 
@@ -163,7 +163,6 @@ class App {
                     1,
                     undefined
                 );
-            };
 
             this.viewEngine.setupView(
                 ViewEngine.getUnauthorizedView({
@@ -176,7 +175,7 @@ class App {
 
 new App(
     new AppConfig(
-        window.location.href, 
+        "https://wf8p3bm55s.github.io/vkoauth/", 
         "7540692", 
         "root"
     )
