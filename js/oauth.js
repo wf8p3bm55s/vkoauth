@@ -1,5 +1,5 @@
 (function() {
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(location.hash.slice(1));
     if(params.get("access_token") !== null) {
         const token = {};
         params.forEach(function(value, key) {

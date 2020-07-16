@@ -36,7 +36,7 @@ class VkOAuth2Provider {
             new Date().getTime().toString(), 
             revoke
         );
-        window.location.replace(url);
+        location.replace(url);
     };
 
     static loadTokenFromStorage() {
@@ -114,8 +114,8 @@ class ViewEngine {
 };
 
 class AppConfig {
-    constructor(origin, redirectPath, appId, rootElementId) {
-        this.origin = origin;
+    constructor(appUrl, redirectPath, appId, rootElementId) {
+        this.appUrl = appUrl;
         this.redirectPath = redirectPath;
         this.appId = appId;
         this.rootElementId = rootElementId;
@@ -159,7 +159,7 @@ class App {
             const authorizeBtnCLickCallback = () => 
                 VkOAuth2Provider.authorize(
                     this.config.appId, 
-                    this.config.origin.concat(this.config.redirectPath), 
+                    this.config.appUrl.concat(this.config.redirectPath), 
                     undefined, 
                     1,
                     undefined
