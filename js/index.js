@@ -176,7 +176,7 @@ class App {
 
 new App(
     new AppConfig(
-        window.location.origin, 
+        window.location.href, 
         "7540692", 
         "root"
     )
