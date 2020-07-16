@@ -6,13 +6,15 @@ class VkAccessToken {
     };
 
     isValid() {
-        return this.token != undefined && (new Date()).getTime() < this.tokenExpires;
+        return (new Date()).getTime() < this.tokenExpires;
     };
 };
 
 class VkOAuth2Provider {
-    static buildAuthorizeUrl(client_id, redirect_uri, display, scope, response_type, state, revoke) {        
-        let url = "https://oauth.vk.com/authorize";
+    static URL = "https://oauth.vk.com/authorize";
+    static buildAuthorizeUrl(
+        client_id, redirect_uri, display, scope, response_type, state, revoke) { 
+        let url = VkOAuth2Provider.URL;
         url += `?client_id=${client_id}`;
         url += `&redirect_uri=${redirect_uri}`;
         display != undefined ? url += `&display=${display}` : null;
@@ -24,9 +26,16 @@ class VkOAuth2Provider {
     };
 
     static authorize(
-        client_id, redirect_uri, display, scope, response_type, state, revoke) {
+        client_id, redirect_uri, display, scope, revoke) {
         const url = VkOAuth2Provider.buildAuthorizeUrl(
-            client_id, redirect_uri, display, scope, response_type, state, revoke);
+            client_id, 
+            redirect_uri, 
+            display, 
+            scope, 
+            "token", 
+            new Date().getTime().toString(), 
+            revoke
+        );
         window.location.replace(url);
     };
 
@@ -48,11 +57,67 @@ class VkOAuth2Provider {
     };
 };
 
+class VkApiProvider {
+    static VERSION = "5.120";
+    static URL = "https://api.vk.com/method/";
+
+    constructor(accessToken) {
+        this.accessToken = accessToken;
+    };
+
+    buildApiUrl(methodName, params) {
+        let url = `${VkApiProvider.URL}${methodName}?`;
+        url += Object.entries(params).map(entry => `${entry[0]}=${entry[1]}`).join("&");
+        url += `&access_token=${this.accessToken.token}`;
+        url += `&V=${VkApiProvider.VERSION}`;
+        return url;
+    };
+
+    requestApi(methodName, params) {
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.responseType = 'json';
+            xhr.timeout = 10000;
+            xhr.open("GET", this.buildApiUrl(methodName, params), true);
+            xhr.send();
+            xhr.onload = () => resolve(xhr);
+            xhr.onerror = () => reject(xhr);
+            xhr.timeout = () => reject(xhr);
+        });
+    };
+};
+
+class ViewEngine {
+    static getUnauthorizedView(model) {
+        const button = document.createElement("button");
+        button.innerText = "Авторизоваться";
+        button.onclick = model.authorizeBtnCLickCallback;
+        return button;
+    };
+
+    static getAuthorizedView(model) {
+        const button = document.createElement("button");
+        button.innerText = "Авторизоваться";
+        // button.onclick = authorizeBtnCLickCallback;
+        return button;
+    };
+
+    constructor(rootElementId) {
+        this.rootElement = document.getElementById(rootElementId);
+    };
+
+    setupView(view) {
+        while (this.rootElement.firstChild) 
+            this.rootElement.removeChild(this.rootElement.firstChild);
+        this.rootElement.appendChild(view);
+    };
+};
+
 class AppConfig {
-    constructor(appUrl, appClientId, htmlRootId) {
+    constructor(appUrl, appId, rootElementId) {
         this.appUrl = appUrl;
-        this.appClientId = appClientId;
-        this.htmlRootId = htmlRootId;
+        this.appId = appId;
+        this.rootElementId = rootElementId;
     };
 };
 
@@ -61,48 +126,58 @@ class App {
         this.config = config;
     };
 
-    getRootElement() {
-        const root = document.getElementById(this.config.htmlRootId);
-        if(root === null) throw new Error("Root not found.");
-        return root;
-    };
-
-    getUnauthorizedView() {
-        const button = document.createElement("button");
-        button.innerText = "Авторизоваться";
-        button.onclick = () => {
-            VkOAuth2Provider.authorize(
-                this.config.appClientId, 
-                this.config.appUrl, 
-                undefined, 
-                1, 
-                "token",
-                new Date().getTime().toString());
-        };
-        return button;
-    };
-
-    getAuthorizedView() {
-        const button = document.createElement("button");
-        button.innerText = "Авторизован";
-        return button;
-    };
-
-    setupView(view) {
-        const rootElement = this.getRootElement();
-        while (rootElement.firstChild) 
-            rootElement.removeChild(rootElement.firstChild);
-        rootElement.appendChild(view);
-    };
-
     init() {
-        const token = VkOAuth2Provider.loadTokenFromStorage();
-        if(token !== null && token.isValid) {
-            this.setupView(this.getAuthorizedView());
+        this.viewEngine = new ViewEngine(this.config.rootElementId);
+        this.accessToken = VkOAuth2Provider.loadTokenFromStorage();
+        if(this.accessToken !== null && this.accessToken.isValid()) {
+            this.vkApiProvider = new VkApiProvider(this.accessToken);
+
+            const executeCode = 
+            `
+                var profileInfo = API.account.getProfileInfo();
+                return {
+                    "firstName": profileInfo.first_name, 
+                    "lastName": profileInfo.last_name,
+                    "friends": API.friends.get({
+                        "order": "random", 
+                        "count": 5, 
+                        "fields": "nickname"
+                    })
+                };
+            `
+
+            this.vkApiProvider.requestApi("execute", {
+                code: executeCode
+            }).then((xhr) => {
+                console.log(xhr);
+                // this.viewEngine.setupView(ViewEngine.getAuthorizedView());
+            }, (xhr) => { 
+                console.log(xhr);
+            });
         } else {
-            this.setupView(this.getUnauthorizedView());
+            const authorizeBtnCLickCallback = () => {
+                VkOAuth2Provider.authorize(
+                    this.config.appId, 
+                    this.config.appUrl, 
+                    undefined, 
+                    1,
+                    undefined
+                );
+            };
+
+            this.viewEngine.setupView(
+                ViewEngine.getUnauthorizedView({
+                    authorizeBtnCLickCallback: authorizeBtnCLickCallback
+                })
+            );
         }
     };
 };
 
-new App(new AppConfig(window.location.origin, "", "root")).init();
+new App(
+    new AppConfig(
+        window.location.origin, 
+        "7540692", 
+        "root"
+    )
+).init();
