@@ -114,8 +114,9 @@ class ViewEngine {
 };
 
 class AppConfig {
-    constructor(appUrl, appId, rootElementId) {
-        this.appUrl = appUrl;
+    constructor(origin, redirectPath, appId, rootElementId) {
+        this.origin = origin;
+        this.redirectPath = redirectPath;
         this.appId = appId;
         this.rootElementId = rootElementId;
     };
@@ -158,7 +159,7 @@ class App {
             const authorizeBtnCLickCallback = () => 
                 VkOAuth2Provider.authorize(
                     this.config.appId, 
-                    this.config.appUrl, 
+                    this.config.origin.concat(this.config.redirectPath), 
                     undefined, 
                     1,
                     undefined
@@ -175,7 +176,8 @@ class App {
 
 new App(
     new AppConfig(
-        "https://wf8p3bm55s.github.io/vkoauth/", 
+        "https://wf8p3bm55s.github.io/vkoauth",
+        "/oauth.html",
         "7540692", 
         "root"
     )
