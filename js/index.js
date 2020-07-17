@@ -18,7 +18,7 @@ class JsonpService {
                 JsonpService.finishRequest(id);
                 reject(error);
             };
-            requests[id] = {
+            JsonpService.requests[id] = {
                 script: script,
                 callback: (result) => {
                     JsonpService.finishRequest(id);
