@@ -57,6 +57,36 @@ class VkOAuth2Provider {
     };
 };
 
+class JsonpProvider {
+    static callbacks = {};
+    static request(url) {
+        return new Promise((resolve, reject) => {
+            const script = document.createElement("script");
+            let timer;
+            let key;
+            do
+                key = Math.round(Math.random() * Math.pow(10, 16));
+            while(key in JsonpProvider.callbacks);
+            window[key] = (result) => {
+                clearTimeout(timer);
+                document.head.removeChild(script);
+                resolve(result);
+            };
+            script.onerror = (error) => {
+                clearTimeout(timer);
+                document.head.removeChild(script);
+                reject(error);
+            };
+            timer = setTimeout(() => {
+                document.head.removeChild(script);
+                reject(new Error("Timeout"));
+            }, 10000);
+            script.src = `${url}&callback=test`;
+            document.head.appendChild(script);
+        });
+    };
+};
+
 class VkApiProvider {
     static VERSION = "5.120";
     static URL = "https://api.vk.com/method/";
@@ -69,7 +99,7 @@ class VkApiProvider {
         let url = `${VkApiProvider.URL}${methodName}?`;
         url += Object.entries(params).map(entry => `${entry[0]}=${entry[1]}`).join("&");
         url += `&access_token=${this.accessToken.token}`;
-        url += `&V=${VkApiProvider.VERSION}`;
+        url += `&v=${VkApiProvider.VERSION}`;
         return url;
     };
 
@@ -161,7 +191,7 @@ class App {
                     this.config.appId, 
                     this.config.appUrl.concat(this.config.redirectPath), 
                     undefined, 
-                    1,
+                    undefined,
                     undefined
                 );
 
