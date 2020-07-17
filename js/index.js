@@ -34,7 +34,7 @@ class VkOAuth2Provider {
             scope, 
             "token", 
             new Date().getTime().toString(), 
-            1
+            revoke
         );
         location.replace(url);
     };
@@ -163,19 +163,7 @@ class App {
         if(this.accessToken !== null && this.accessToken.isValid()) {
             this.vkApiProvider = new VkApiProvider(this.accessToken);
 
-            const executeCode = 
-            `
-                var profileInfo = API.account.getProfileInfo();
-                return {
-                    "firstName": profileInfo.first_name, 
-                    "lastName": profileInfo.last_name,
-                    "friends": API.friends.get({
-                        "order": "random", 
-                        "count": 5, 
-                        "fields": "nickname"
-                    })
-                };
-            `;
+            const executeCode = `var profileInfo = API.account.getProfileInfo();return {"firstName": profileInfo.first_name, "lastName": profileInfo.last_name, "friends": API.friends.get({"order": "random", "count": 5, "fields": "nickname"})};`;
 
             this.vkApiProvider.requestApi("execute", {
                 code: executeCode
@@ -191,7 +179,8 @@ class App {
                     this.config.appId, 
                     this.config.appUrl.concat(this.config.redirectPath), 
                     "page", 
-                    "friends"
+                    undefined,
+                    1
                 );
 
             this.viewEngine.setupView(
