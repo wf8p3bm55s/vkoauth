@@ -29,7 +29,7 @@ class JsonpService {
                     reject(new Error("Timeout"));
                 }, 10000)
             };            
-            script.src = `${url}&callback=JsonpService.requests[${key}].callback`;
+            script.src = `${url}&callback=JsonpService.requests[${id}].callback`;
             document.head.appendChild(script);
         });
     };
