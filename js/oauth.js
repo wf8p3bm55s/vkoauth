@@ -13,6 +13,6 @@
         });
         sessionStorage.setItem("tokenError", JSON.stringify(tokenError));
     }
-    location.replace(
-        location.origin.concat(location.pathname.split("/", 2).join("/")));
+    // location.replace(
+    //     location.origin.concat(location.pathname.split("/", 2).join("/")));
 })();
