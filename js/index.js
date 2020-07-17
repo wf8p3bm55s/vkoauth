@@ -2,9 +2,9 @@
 class JsonpService {
     static requests = {};
     static finishRequest(id) {
-        clearTimeout(requests[id].timer);
-        document.head.removeChild(requests[id].script);
-        delete requests[id];
+        clearTimeout(JsonpService.requests[id].timer);
+        document.head.removeChild(JsonpService.requests[id].script);
+        delete JsonpService.requests[id];
     };
 
     static get(url) {
