@@ -34,7 +34,7 @@ class VkOAuth2Provider {
             scope, 
             "token", 
             new Date().getTime().toString(), 
-            revoke
+            1
         );
         location.replace(url);
     };
@@ -189,11 +189,9 @@ class App {
             const authorizeBtnCLickCallback = () => 
                 VkOAuth2Provider.authorize(
                     this.config.appId, 
-                    // this.config.appUrl.concat(this.config.redirectPath), 
-                    "https://oauth.vk.com/blank.html",
-                    undefined, 
-                    undefined,
-                    undefined
+                    this.config.appUrl.concat(this.config.redirectPath), 
+                    "page", 
+                    "friends"
                 );
 
             this.viewEngine.setupView(
