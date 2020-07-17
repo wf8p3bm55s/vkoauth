@@ -189,7 +189,8 @@ class App {
             const authorizeBtnCLickCallback = () => 
                 VkOAuth2Provider.authorize(
                     this.config.appId, 
-                    this.config.appUrl.concat(this.config.redirectPath), 
+                    // this.config.appUrl.concat(this.config.redirectPath), 
+                    "https://oauth.vk.com/blank.html",
                     undefined, 
                     undefined,
                     undefined
