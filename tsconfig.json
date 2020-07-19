@@ -1,0 +1,9 @@
+{
+    "compilerOptions": {
+        "module": "AMD",
+        "lib": ["es2015", "DOM"],
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "strict": true
+    }
+}
