@@ -5,7 +5,7 @@ export interface JsonpServiceRequest<T> {
 };
 
 export class JsonpService {
-    static readonly requests: {[key: string]: JsonpServiceRequest<any>};
+    static readonly requests: {[key: string]: JsonpServiceRequest<any>} = {};
 
     static finishRequest(id: string): void {
         window.clearTimeout(JsonpService.requests[id].timeoutTimer);
