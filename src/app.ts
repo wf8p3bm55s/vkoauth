@@ -1,4 +1,8 @@
-import { ViewEngine } from "./view";
+import { 
+    ViewEngine, 
+    AuthorizedViewModel, 
+    UnauthorizedViewModel 
+} from "./view";
 import { VkApiService } from "./vk-api";
 import { VkOAuth2Service } from "./vk-auth";
 
@@ -27,21 +31,34 @@ export class App {
             vkApiService.requestApi<SelfAnd5RandomFriendNamesResponse>(
                 "execute.getSelfAnd5RandomFriendNames", {}, 10000
             ).then((result) => {
-                console.log(result);
+                viewEngine.setupView(
+                    ViewEngine.getAuthorizedView(
+                        new AuthorizedViewModel(
+                            result.response.name,
+                            result.response.friends
+                        )
+                    )
+                );
             }, (error) => { 
-                console.log(error);
+                if(error instanceof Error) {
+                    alert(error.message);
+                } else if(error instanceof Event) {
+                    alert("Ошибка запроса. Перезагрузите страницу.");
+                }
             });
         } else {
             viewEngine.setupView(
-                ViewEngine.getUnauthorizedView({
-                    authorizeBtnCLickCallback: () => VkOAuth2Service.authorize(
-                        config.appId, 
-                        config.appUrl.concat(config.redirectPath), 
-                        "page", 
-                        "friends",
-                        1
+                ViewEngine.getUnauthorizedView(
+                    new UnauthorizedViewModel(
+                        () => VkOAuth2Service.authorize(
+                            config.appId, 
+                            config.appUrl.concat(config.redirectPath), 
+                            "page", 
+                            "friends",
+                            1
+                        )
                     )
-                })
+                )
             );
         }
     };
