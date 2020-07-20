@@ -1,6 +1,7 @@
 export class StorageNotAvailableError extends Error {
     constructor() {
         super();
+        Object.setPrototypeOf(this, StorageNotAvailableError.prototype);
         this.name = "StorageNotAvailableError";
     }
 };

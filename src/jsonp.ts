@@ -15,6 +15,7 @@ export interface JsonpServiceRequest<T> {
 export class JsonpTimeoutError extends Error {
     constructor() {
         super();
+        Object.setPrototypeOf(this, JsonpTimeoutError.prototype);
         this.name = "JsonpTimeoutError";
     }
 };
