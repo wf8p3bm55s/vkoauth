@@ -1,15 +1,32 @@
 import { 
     ViewEngine, 
     AuthorizedViewModel, 
-    UnauthorizedViewModel 
-} from "./view";
+    UnauthorizedViewModel } from "./view";
 import { VkApiService } from "./vk-api";
-import { VkOAuth2Service } from "./vk-auth";
+import { VkOAuth2Service } from "./vk-oauth2";
+import { 
+    StorageProvider, 
+    StorageNotAvailableError } from "./storage-provider";
+import { JsonpTimeoutError } from "./jsonp";
 
 interface SelfAnd5RandomFriendNamesResponse {
     response: {
         name: string;
         friends: string[]
+    }
+};
+
+export const enum AppErrorCode {
+    JsonpError,
+    JsonpTimeout,
+    StorageNotAvailable
+};
+
+export class AppError extends Error {
+    constructor(
+        public readonly code: AppErrorCode
+    ) {
+        super();
     }
 };
 
@@ -24,13 +41,24 @@ export class AppConfig {
 
 export class App {
     static init(config: AppConfig): void {
+        let storageProvider;
+        try {
+            storageProvider = StorageProvider.getInstance();
+        } catch(e) {
+            throw new AppError(AppErrorCode.StorageNotAvailable);
+        }
         const viewEngine = new ViewEngine(config.rootElement);
-        const token = VkOAuth2Service.findToken();
+        const token = VkOAuth2Service.findToken(
+            storageProvider.getTokenStorage(), 
+            storageProvider.getVkOAuth2RedirectParamsStorage()
+        );
         if(token !== null && token.isValid()) {
-            const vkApiService = new VkApiService(token);
-            vkApiService.requestApi<SelfAnd5RandomFriendNamesResponse>(
-                "execute.getSelfAnd5RandomFriendNames", {}, 10000
-            ).then((result) => {
+            VkApiService.requestApi<SelfAnd5RandomFriendNamesResponse>(
+                token,
+                "execute.getSelfAnd5RandomFriendNames", 
+                {}, 
+                10000
+            ).then(result => {
                 viewEngine.setupView(
                     ViewEngine.getAuthorizedView(
                         new AuthorizedViewModel(
@@ -39,11 +67,11 @@ export class App {
                         )
                     )
                 );
-            }, (error) => { 
-                if(error instanceof Error) {
-                    alert(error.message);
+            }, error => { 
+                if(error instanceof JsonpTimeoutError) {
+                    throw new AppError(AppErrorCode.JsonpTimeout);
                 } else if(error instanceof Event) {
-                    alert("Ошибка запроса. Перезагрузите страницу.");
+                    throw new AppError(AppErrorCode.JsonpError);
                 }
             });
         } else {

@@ -1,24 +1,29 @@
 import { JsonpService } from "./jsonp"
-import { VkAccessToken } from "./vk-auth";
+import { VkAccessToken } from "./vk-oauth2";
 
 export class VkApiService {
     static readonly VERSION = "5.120";
     static readonly URL = "https://api.vk.com/method/";
 
-    constructor(
-        public readonly token: VkAccessToken
-    ) {};
-
-    buildApiUrl(methodName: string, params: {[key: string]: string}): string {
+    static buildApiUrl(
+        token: VkAccessToken, 
+        methodName: string, 
+        params: {[key: string]: string}
+    ): string {
         let url = `${VkApiService.URL}${methodName}?`;
         url += Object.keys(params).map(key => `${key}=${params[key]}`).join("&");
-        url += `&access_token=${this.token.token}`;
+        url += `&access_token=${token.token}`;
         url += `&v=${VkApiService.VERSION}`;
         return url;
     };
 
-    requestApi<T>(methodName: string, params: {[key: string]: string}, timeout: number) {
-        const url = this.buildApiUrl(methodName, params);
+    static requestApi<T>(
+        token: VkAccessToken, 
+        methodName: string, 
+        params: {[key: string]: string}, 
+        timeout: number
+    ) {
+        const url = VkApiService.buildApiUrl(token, methodName, params);
         return JsonpService.get<T>(url, timeout);
     };
 };

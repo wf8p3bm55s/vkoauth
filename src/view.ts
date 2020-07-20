@@ -7,7 +7,7 @@ export class UnauthorizedViewModel {
 export class AuthorizedViewModel {
     constructor(
         public readonly name: string,
-        public readonly friends: string[]
+        public readonly friends: Readonly<string[]>
     ) {};
 };
 

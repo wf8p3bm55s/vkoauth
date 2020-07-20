@@ -2,7 +2,7 @@ declare global {
     interface Window {
         JSONP_REQUESTS: {[key: string]: JsonpServiceRequest<any>};
     }
-}
+};
 
 window.JSONP_REQUESTS = {};
 
@@ -11,6 +11,8 @@ export interface JsonpServiceRequest<T> {
     timeoutTimer: number;
     callback: (result: T) => void
 };
+
+export class JsonpTimeoutError extends Error {};
 
 export class JsonpService {
     static finishRequest(id: string): void {
@@ -36,7 +38,7 @@ export class JsonpService {
                 scriptElement: scriptElement,
                 timeoutTimer: window.setTimeout(() => {
                     JsonpService.finishRequest(id);
-                    reject(new Error("Timeout"));
+                    reject(new JsonpTimeoutError());
                 }, timeout),
                 callback: (result: T) => {
                     JsonpService.finishRequest(id);
