@@ -1,4 +1,9 @@
-export class StorageNotAvailableError extends Error {};
+export class StorageNotAvailableError extends Error {
+    constructor() {
+        super();
+        this.name = "StorageNotAvailableError";
+    }
+};
 
 export class StorageProvider {
     private static instance: StorageProvider;

@@ -12,7 +12,12 @@ export interface JsonpServiceRequest<T> {
     callback: (result: T) => void
 };
 
-export class JsonpTimeoutError extends Error {};
+export class JsonpTimeoutError extends Error {
+    constructor() {
+        super();
+        this.name = "JsonpTimeoutError";
+    }
+};
 
 export class JsonpService {
     static finishRequest(id: string): void {

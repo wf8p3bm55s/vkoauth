@@ -40,6 +40,6 @@ App.init(
                 break;
         }
     } else {
-        alert("Неизвестная ошибка: ${e.message}");
+        alert(`Неизвестная ошибка: ${e.message}`);
     }
 });

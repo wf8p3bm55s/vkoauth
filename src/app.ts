@@ -27,6 +27,7 @@ export class AppError extends Error {
         public readonly code: AppErrorCode
     ) {
         super();
+        this.name = 'AppError';
     }
 };
 
