@@ -19,27 +19,28 @@ App.init(
         let errorMsg = "Ошибка приложения:";
         switch(e.code) {
             case AppErrorCode.JsonpError:
-                errorMsg = `${errorMsg} Ошибка запроса: Попробуйте \
-                    ${navigator.userAgent.includes("Mozilla") ? 
-                        "отключить защиту от отслеживания и " : " "}\
-                        перезагрузить страницу. \
-                        Код ошибки: ${AppErrorCode.JsonpError}`;
+                errorMsg = `${errorMsg} Ошибка запроса: Попробуйте ` +
+                    `${navigator.userAgent.includes("Mozilla") ? 
+                        "отключить защиту от отслеживания и " : " "}` +
+                    `перезагрузить страницу. ` +
+                    `Код ошибки: ${AppErrorCode.JsonpError}`;
                 break;
             case AppErrorCode.JsonpTimeout:
-                errorMsg = `${errorMsg} Сервер не ответил в отведенное время. \
-                    Проверьте доступ к интернету и презагрузите страницу. \
-                    Код ошибки: ${AppErrorCode.JsonpTimeout}`;
+                errorMsg = `${errorMsg} Сервер не ответил в отведенное время. ` +
+                    `Проверьте доступ к интернету и презагрузите страницу. ` +
+                    `Код ошибки: ${AppErrorCode.JsonpTimeout}`;
                 break;
             case AppErrorCode.StorageNotAvailable:
-                errorMsg = `${errorMsg} Локальное хранилище недоступно. \
-                Обеспечьте доступ к хранилищу и перезагрузите страницу. 
-                Код ошибки: ${AppErrorCode.StorageNotAvailable}`;
+                errorMsg = `${errorMsg} Локальное хранилище недоступно. ` +
+                    `Обеспечьте доступ к хранилищу и перезагрузите страницу. ` +
+                    `Код ошибки: ${AppErrorCode.StorageNotAvailable}`;
                 break;
             default:
                 errorMsg = `${errorMsg} Иная ошибка.`;
                 break;
         }
+        alert(errorMsg);
     } else {
-        alert(`Неизвестная ошибка: ${e.message}`);
+        alert(`Неизвестная ошибка: ${e.name}`);
     }
 });
