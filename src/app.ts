@@ -40,7 +40,7 @@ export class AppConfig {
 };
 
 export class App {
-    static init(config: AppConfig): void {
+    static init(config: AppConfig): Promise<void> {
         let storageProvider;
         try {
             storageProvider = StorageProvider.getInstance();
@@ -53,7 +53,7 @@ export class App {
             storageProvider.getVkOAuth2RedirectParamsStorage()
         );
         if(token !== null && token.isValid()) {
-            VkApiService.requestApi<SelfAnd5RandomFriendNamesResponse>(
+            return VkApiService.requestApi<SelfAnd5RandomFriendNamesResponse>(
                 token,
                 "execute.getSelfAnd5RandomFriendNames", 
                 {}, 
@@ -88,6 +88,7 @@ export class App {
                     )
                 )
             );
+            return Promise.resolve();
         }
     };
 };

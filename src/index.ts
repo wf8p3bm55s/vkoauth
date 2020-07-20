@@ -4,18 +4,17 @@ import {
     AppErrorCode,
     AppError } from "./app";
 
-try {
-    const rootElement = document.createElement("div"); 
-    document.body.appendChild(rootElement);
-    App.init(
-        new AppConfig(
-            "7540692", 
-            "https://wf8p3bm55s.github.io/vkoauth",
-            "/oauth.html",
-            rootElement
-        )
-    );
-} catch(e) {
+const rootElement = document.createElement("div"); 
+document.body.appendChild(rootElement);
+
+App.init(
+    new AppConfig(
+        "7540692", 
+        "https://wf8p3bm55s.github.io/vkoauth",
+        "/oauth.html",
+        rootElement
+    )
+).catch(e => {
     if(e instanceof AppError) {
         let errorMsg = "Ошибка приложения:";
         switch(e.code) {
@@ -43,4 +42,4 @@ try {
     } else {
         alert("Неизвестная ошибка: ${e.message}");
     }
-};
+});
