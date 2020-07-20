@@ -1,3 +1,9 @@
+declare global {
+    var JSONP_REQUESTS: {[key: string]: JsonpServiceRequest<any>}
+}
+
+JSONP_REQUESTS = {};
+
 export interface JsonpServiceRequest<T> {
     scriptElement: HTMLScriptElement;
     timeoutTimer: number;
@@ -5,12 +11,10 @@ export interface JsonpServiceRequest<T> {
 };
 
 export class JsonpService {
-    static readonly requests: {[key: string]: JsonpServiceRequest<any>} = {};
-
     static finishRequest(id: string): void {
-        window.clearTimeout(JsonpService.requests[id].timeoutTimer);
-        document.head.removeChild(JsonpService.requests[id].scriptElement);
-        delete JsonpService.requests[id];
+        window.clearTimeout(JSONP_REQUESTS[id].timeoutTimer);
+        document.head.removeChild(JSONP_REQUESTS[id].scriptElement);
+        delete JSONP_REQUESTS[id];
     };
 
     static get<T>(url: string, timeout: number): Promise<T> {
@@ -18,7 +22,7 @@ export class JsonpService {
             let id: string;
             do
                 id = Math.round(Math.random() * Math.pow(10, 16)).toString();
-            while(id in JsonpService.requests);
+            while(id in JSONP_REQUESTS);
 
             const scriptElement = document.createElement("script");
             scriptElement.onerror = error => {
@@ -26,7 +30,7 @@ export class JsonpService {
                 reject(error);
             };
 
-            JsonpService.requests[id] = {
+            JSONP_REQUESTS[id] = {
                 scriptElement: scriptElement,
                 timeoutTimer: window.setTimeout(() => {
                     JsonpService.finishRequest(id);
@@ -38,7 +42,7 @@ export class JsonpService {
                 }
             };
 
-            scriptElement.src = `${url}&callback=JsonpService.requests[${id}].callback`;
+            scriptElement.src = `${url}&callback=JSONP_REQUESTS[${id}].callback`;
             document.head.appendChild(scriptElement);
         });
     };

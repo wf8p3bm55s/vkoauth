@@ -34,10 +34,12 @@ module.exports = {
             ],
         }),
         new HtmlWebpackPlugin({
+            title: "Index",
             chunks: ['index'],
             filename: 'index.html'
         }),
         new HtmlWebpackPlugin({
+            title: "OAuth",
             chunks: ['oauth'],
             filename: 'oauth.html'
         })
