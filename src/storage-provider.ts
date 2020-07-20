@@ -1,6 +1,6 @@
 export class StorageNotAvailableError extends Error {
     constructor() {
-        super();
+        super(`Локальное хранилище недоступно.`);
         Object.setPrototypeOf(this, StorageNotAvailableError.prototype);
         this.name = "StorageNotAvailableError";
     }
@@ -11,7 +11,6 @@ export class StorageProvider {
 
     private tokenStorage: Storage;
     private vkOAuth2ErrorStorage: Storage;
-    private vkOAuth2RedirectParamsStorage: Storage;
 
     private static isStorageAvailable(storage: Storage | unknown): boolean {
         const something = Math.random().toString();
@@ -46,8 +45,6 @@ export class StorageProvider {
                 localStorage : sessionStorage!;
             this.vkOAuth2ErrorStorage = sessionStorage !== null ? 
                 sessionStorage : localStorage!;
-            this.vkOAuth2RedirectParamsStorage = sessionStorage !== null ? 
-                sessionStorage : localStorage!;
         }
     };
 
@@ -57,9 +54,5 @@ export class StorageProvider {
 
     getVkOAuth2ErrorStorage(): Storage {
         return this.vkOAuth2ErrorStorage;
-    };
-
-    getVkOAuth2RedirectParamsStorage(): Storage {
-        return this.vkOAuth2RedirectParamsStorage;
     };
 };

@@ -6,18 +6,26 @@ declare global {
 
 window.JSONP_REQUESTS = {};
 
+export class JsonpTimeoutError extends Error {
+    constructor() {
+        super("Сервер не ответил в отведенное время.");
+        Object.setPrototypeOf(this, JsonpTimeoutError.prototype);
+        this.name = "JsonpTimeoutError";
+    }
+};
+
+export class JsonpRequestError extends Error {
+    constructor() {
+        super("Ошибка запроса.");
+        Object.setPrototypeOf(this, JsonpRequestError.prototype);
+        this.name = "JsonpRequestError";
+    }
+}
+
 export interface JsonpServiceRequest<T> {
     scriptElement: HTMLScriptElement;
     timeoutTimer: number;
     callback: (result: T) => void
-};
-
-export class JsonpTimeoutError extends Error {
-    constructor() {
-        super();
-        Object.setPrototypeOf(this, JsonpTimeoutError.prototype);
-        this.name = "JsonpTimeoutError";
-    }
 };
 
 export class JsonpService {
@@ -37,7 +45,7 @@ export class JsonpService {
             const scriptElement = document.createElement("script");
             scriptElement.onerror = error => {
                 JsonpService.finishRequest(id);
-                reject(error);
+                reject(new JsonpRequestError());
             };
 
             window.JSONP_REQUESTS[id] = {

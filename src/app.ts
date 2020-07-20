@@ -3,32 +3,16 @@ import {
     AuthorizedViewModel, 
     UnauthorizedViewModel } from "./view";
 import { VkApiService } from "./vk-api";
-import { VkOAuth2Service } from "./vk-oauth2";
 import { 
-    StorageProvider, 
-    StorageNotAvailableError } from "./storage-provider";
-import { JsonpTimeoutError } from "./jsonp";
+    VkOAuth2Service,
+    VkAccessToken } from "./vk-oauth2";
+import { 
+    StorageProvider } from "./storage-provider";
 
 interface SelfAnd5RandomFriendNamesResponse {
     response: {
         name: string;
         friends: string[]
-    }
-};
-
-export const enum AppErrorCode {
-    JsonpError,
-    JsonpTimeout,
-    StorageNotAvailable
-};
-
-export class AppError extends Error {
-    constructor(
-        public readonly code: AppErrorCode
-    ) {
-        super();
-        Object.setPrototypeOf(this, AppError.prototype);
-        this.name = 'AppError';
     }
 };
 
@@ -43,17 +27,9 @@ export class AppConfig {
 
 export class App {
     static init(config: AppConfig): Promise<void> {
-        let storageProvider;
-        try {
-            storageProvider = StorageProvider.getInstance();
-        } catch(e) {
-            throw new AppError(AppErrorCode.StorageNotAvailable);
-        }
+        const storageProvider = StorageProvider.getInstance();
         const viewEngine = new ViewEngine(config.rootElement);
-        const token = VkOAuth2Service.findToken(
-            storageProvider.getTokenStorage(), 
-            storageProvider.getVkOAuth2RedirectParamsStorage()
-        );
+        const token = VkAccessToken.fromStorage(storageProvider.getTokenStorage());
         if(token !== null && token.isValid()) {
             return VkApiService.requestApi<SelfAnd5RandomFriendNamesResponse>(
                 token,
@@ -69,12 +45,6 @@ export class App {
                         )
                     )
                 );
-            }, error => { 
-                if(error instanceof JsonpTimeoutError) {
-                    throw new AppError(AppErrorCode.JsonpTimeout);
-                } else if(error instanceof Event) {
-                    throw new AppError(AppErrorCode.JsonpError);
-                }
             });
         } else {
             viewEngine.setupView(

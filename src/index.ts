@@ -1,8 +1,15 @@
 import { 
     AppConfig,
-    App,
-    AppErrorCode,
-    AppError } from "./app";
+    App } from "./app";
+
+import {
+    JsonpTimeoutError,
+    JsonpRequestError
+} from "./jsonp";
+
+import {
+    StorageNotAvailableError
+} from "./storage-provider";
 
 const rootElement = document.createElement("div"); 
 document.body.appendChild(rootElement);
@@ -14,33 +21,26 @@ App.init(
         "/oauth.html",
         rootElement
     )
-).catch(e => {
-    if(e instanceof AppError) {
-        let errorMsg = "Ошибка приложения:";
-        switch(e.code) {
-            case AppErrorCode.JsonpError:
-                errorMsg = `${errorMsg} Ошибка запроса: Попробуйте ` +
-                    `${navigator.userAgent.includes("Mozilla") ? 
+).catch((e: Error) => {
+    let errorMsg = "Ошибка приложения";
+    if(e instanceof JsonpRequestError) {
+        alert(
+            `${errorMsg}: ${e.name}: ${e.message} Попробуйте ` +
+            `${navigator.userAgent.includes("Mozilla") ? 
                         "отключить защиту от отслеживания и " : " "}` +
-                    `перезагрузить страницу. ` +
-                    `Код ошибки: ${AppErrorCode.JsonpError}`;
-                break;
-            case AppErrorCode.JsonpTimeout:
-                errorMsg = `${errorMsg} Сервер не ответил в отведенное время. ` +
-                    `Проверьте доступ к интернету и презагрузите страницу. ` +
-                    `Код ошибки: ${AppErrorCode.JsonpTimeout}`;
-                break;
-            case AppErrorCode.StorageNotAvailable:
-                errorMsg = `${errorMsg} Локальное хранилище недоступно. ` +
-                    `Обеспечьте доступ к хранилищу и перезагрузите страницу. ` +
-                    `Код ошибки: ${AppErrorCode.StorageNotAvailable}`;
-                break;
-            default:
-                errorMsg = `${errorMsg} Иная ошибка.`;
-                break;
-        }
-        alert(errorMsg);
+            `перезагрузить страницу.`
+        );
+    } else if(e instanceof JsonpTimeoutError) {
+        alert(
+            `${errorMsg}: ${e.name}: ${e.message} ` +
+            `Проверьте доступ к интернету и презагрузите страницу.`
+        );
+    } else if(e instanceof StorageNotAvailableError) {
+        alert(
+            `${errorMsg}: ${e.name}: ${e.message} ` +
+            `Обеспечьте доступ к хранилищу и перезагрузите страницу.`
+        );
     } else {
-        alert(`Неизвестная ошибка: ${e.name}`);
+        alert(`${errorMsg}: ${e.name}: ${e.message}`);
     }
 });

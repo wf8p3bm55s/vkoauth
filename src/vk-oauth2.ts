@@ -27,13 +27,12 @@ class StoreableBuilder {
             store(storage: Storage): void {
                 storage.setItem(key, JSON.stringify(this));
             };
-        }
-    }
+        };
+    };
 };
 
-export class VkOAuth2RedirectParamsSuccess 
-    extends StoreableBuilder.build("VkOAuth2RedirectParamsSuccess") {
-    static fromURLSearchParams(params: URLSearchParams): VkOAuth2RedirectParamsSuccess | null {
+export class VkOAuth2SuccessRedirectParams {
+    static fromURLSearchParams(params: URLSearchParams): VkOAuth2SuccessRedirectParams | null {
         const accessToken = params.get("access_token");
         if(accessToken === null) return null;
         const expiresIn = params.get("expires_in");
@@ -41,7 +40,7 @@ export class VkOAuth2RedirectParamsSuccess
         const userId = params.get("user_id");
         if(userId === null) return null;
         const state = params.get("state");
-        return new VkOAuth2RedirectParamsSuccess(
+        return new VkOAuth2SuccessRedirectParams(
             accessToken, 
             expiresIn, 
             userId, 
@@ -49,62 +48,27 @@ export class VkOAuth2RedirectParamsSuccess
         );
     };
 
-    static fromStorage(storage: Storage): VkOAuth2RedirectParamsSuccess | null {
-        const params = super.fromStorage(storage) as VkOAuth2RedirectParamsSuccess | null;
-        if(params === null) return null;
-        if( typeof params.accessToken === "string" && 
-            typeof params.expiresIn === "string" && 
-            typeof params.userId === "string" && 
-            (typeof params.state === "string" || typeof params.state === "undefined")) {
-            return new VkOAuth2RedirectParamsSuccess(
-                params.accessToken, 
-                params.expiresIn, 
-                params.userId, 
-                params.state
-            );
-        }
-        return null;
-    };
-
     constructor(
         public readonly accessToken: string,
         public readonly expiresIn: string,
         public readonly userId: string,
         public readonly state?: string
-    ) {
-        super();
-    };
+    ) {};
 };
 
-export class VkOAuth2RedirectParamsError 
-    extends StoreableBuilder.build("VkOAuth2RedirectParamsError") {
-    static fromURLSearchParams(params: URLSearchParams): VkOAuth2RedirectParamsError | null {
+export class VkOAuth2ErrorRedirectParams {
+    static fromURLSearchParams(params: URLSearchParams): VkOAuth2ErrorRedirectParams | null {
         const error = params.get("error");
         if(error === null) return null;
         const error_description = params.get("error_description");
         if(error_description === null) return null;
-        return new VkOAuth2RedirectParamsError(error, error_description);
-    };
-    
-    static fromStorage(storage: Storage): VkOAuth2RedirectParamsError | null {
-        const params = super.fromStorage(storage) as VkOAuth2RedirectParamsError | null;
-        if(params === null) return null;
-        if( typeof params.error === "string" &&
-            typeof params.errorDescription === "string") {
-            return new VkOAuth2RedirectParamsError(
-                params.error, 
-                params.errorDescription
-            );
-        }
-        return null;
+        return new VkOAuth2ErrorRedirectParams(error, error_description);
     };
 
     constructor(
         public readonly error: string,
         public readonly errorDescription: string
-    ) {
-        super();
-    };
+    ) {};
 };
 
 export class VkAccessToken 
@@ -113,7 +77,7 @@ export class VkAccessToken
         const token = super.fromStorage(storage) as VkAccessToken | null;
         if(token === null) return null;
         if( typeof token.token === "string" &&
-            typeof token.tokenExpires === "string" &&
+            typeof token.tokenExpires === "number" &&
             typeof token.userId === "string") {
             return new VkAccessToken(
                 token.token,
@@ -137,14 +101,14 @@ export class VkAccessToken
     };
 };
 
-export class VkAuthorizeError 
-    extends StoreableBuilder.build("VkAuthorizeError") {
-    static fromStorage(storage: Storage): VkAuthorizeError | null {
-        const error = super.fromStorage(storage) as VkAuthorizeError | null;
+export class VkErrorAuthorize 
+    extends StoreableBuilder.build("VkErrorAuthorize") {
+    static fromStorage(storage: Storage): VkErrorAuthorize | null {
+        const error = super.fromStorage(storage) as VkErrorAuthorize | null;
         if(error === null) return null;
         if( typeof error.error === "string" && 
             typeof error.errorDescription === "string") {
-            return new VkAuthorizeError(
+            return new VkErrorAuthorize(
                 error.error,
                 error.errorDescription
             );
@@ -163,38 +127,27 @@ export class VkAuthorizeError
 export class VkOAuth2Service {
     static readonly URL: string = "https://oauth.vk.com/authorize";
 
-    static findToken(
-        tokenStorage: Storage, paramsStorage: Storage): VkAccessToken | null {
-        let token = VkAccessToken.fromStorage(tokenStorage);
-        if(token !== null) return token;
-        const params = VkOAuth2RedirectParamsSuccess.fromStorage(paramsStorage);
-        if(params === null) return null;
+    static buildToken(params: VkOAuth2SuccessRedirectParams): VkAccessToken | null {
         if(params.state !== undefined) {
             const timestampMs = parseInt(params.state);
             if(!Number.isNaN(timestampMs)) {
                 const tokenExpires = 
                     timestampMs + parseInt(params.expiresIn) * 1000;
-                token = new VkAccessToken(
+                return new VkAccessToken(
                     params.accessToken,
                     tokenExpires,
                     params.userId
                 );
             }
         }
-        return token;
+        return null;
     };
 
-    static findAuthorizeError(
-        errorStorage: Storage, paramsStorage: Storage): VkAuthorizeError | null {
-        let error = VkAuthorizeError.fromStorage(errorStorage);
-        if(error !== null) return error;
-        const params = VkOAuth2RedirectParamsError.fromStorage(paramsStorage);
-        if(params === null) return null;
-        error = new VkAuthorizeError(
+    static buildErrorAuthorize(params: VkOAuth2ErrorRedirectParams): VkErrorAuthorize {
+        return new VkErrorAuthorize(
             params.error,
             params.errorDescription
         );
-        return error;
     };
 
     static buildAuthorizeUrl(
