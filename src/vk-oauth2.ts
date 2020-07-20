@@ -1,7 +1,5 @@
-abstract class Storeable {
-    static fromStorage(storage: Storage): Object | null { return null; };
-    static remove(storage: Storage): void {};
-    store(storage: Storage): void {};
+interface Storeable {
+    store(storage: Storage): void;
 };
 
 class StoreableBuilder {
