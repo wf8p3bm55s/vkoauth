@@ -7,7 +7,7 @@
 
 Тестирование производилось в браузерах Mozilla Firefox 78 и Google Chrome 84. Рабочая версия приложения находится [здесь](https://wf8p3bm55s.github.io/vkoauth/)
 
-### Mozilla Firefox###
+### Mozilla Firefox
 
 ---
 
